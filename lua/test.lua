@@ -1,13 +1,14 @@
-local win = require("tui.layout")
+local Window = require("tui.layout")
 
-local t = win:new({
-  size = "50%",
+local input = Window:new({
+  size = "75%",
   title = {
-    { " Hola a todos ", "Title"}
+    { "Título, épico", "Title" }
   },
   border = "rounded",
   window_pos = "center",
-  highlight = "Normal",
   instant_insert = true,
   enter_to_window = true,
 })
+
+input:connect()
