@@ -6,7 +6,7 @@
 ---@field private insert? boolean
 ---@field private enter? boolean
 ---@field private pos? Position
----@field private title? string[][]
+---@field private title? Title
 ---@field private border? "single" | "rounded" | "double" | "none"
 local M = {}
 
@@ -14,7 +14,7 @@ local M = {}
 ---@field public size Size | "50%" | string
 ---@field public border? "single" | "rounded" | "double" | "none"
 ---@field public window_pos? WindowPosition | Position
----@field public title? string[][]
+---@field public title? string | Title
 ---@field public instant_insert? boolean
 ---@field public highlight? string
 ---@field public enter_to_window? boolean
@@ -26,6 +26,11 @@ local M = {}
 ---@class Position
 ---@field public row integer
 ---@field public col integer
+
+---@class Title
+---@field public text string
+---@field public position? "left" | "center" | "right"
+---@field public highlight? string
 
 ---@alias WindowPosition
 ---| '"topleft"'
@@ -57,7 +62,6 @@ function M:new(obj)
     height = math.floor(ui.height / 100 * obj.size:gmatch("[0-9]+")())
     self.width = width
     self.height = height
-    print(self.width .. ' ' .. self.height)
   else
     self.width = obj.size.width
     self.height = obj.size.height
@@ -71,13 +75,20 @@ function M:new(obj)
   end
   self.enter = obj.enter_to_window or true
   self.insert = obj.instant_insert or true
-  self.title = obj.title
+  if type(obj.title) == "string" then
+    self.title.text = obj.title ---@diagnostic disable-line
+    self.title.highlight = "Title"
+    self.title.position = "center"
+  else
+    self.title = obj.title ---@diagnostic disable-line
+  end
   self.border = obj.border
   return object
 end
 
 ---@param pos WindowPosition
 ---@return Position
+---@private
 function M:position(pos)
   ---@type integer
   local row, col
@@ -122,7 +133,10 @@ function M:connect()
     col = self.pos.col,
     row = self.pos.row,
     style = 'minimal',
-    title = self.title,
+    title = {
+      { ' ' .. self.title.text .. ' ', self.title.highlight }
+    },
+    title_pos = self.title.position,
     border = self.border,
   })
   if self.insert then
