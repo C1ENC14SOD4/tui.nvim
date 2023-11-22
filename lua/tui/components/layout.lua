@@ -8,6 +8,7 @@
 ---@field private pos? Position
 ---@field private title? Title
 ---@field private border? Border
+---@field private hl_border? string
 ---@field private focusable? boolean
 local M = {}
 
@@ -21,6 +22,7 @@ local M = {}
 ---@field public instant_insert? boolean
 ---@field public enter_to_window? boolean
 ---@field public focusable? boolean
+---@field public border_hl? string
 
 ---@class Size
 ---@field public width? integer
@@ -65,6 +67,7 @@ function M:new(obj)
   setmetatable(object, self)
   self.__index = self
   self.bufnr = vim.api.nvim_create_buf(false, true)
+  self.hl_border = "FloatBorder:" .. (obj.border_hl or "Title")
   if type(obj.size) == "string" then
     ---@diagnostic disable-next-line
     width = math.floor(ui.width / 100 * obj.size:gmatch("[0-9]+")())
@@ -166,6 +169,7 @@ function M:connect()
   if self.insert then
     vim.cmd.startinsert()
   end
+  vim.api.nvim_win_set_option(self.window_id, "winhl", self.hl_border)
 end
 
 return M
