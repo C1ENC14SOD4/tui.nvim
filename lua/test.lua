@@ -1,12 +1,9 @@
-local Window = require("tui.layout")
+Notification = require("tui.components.notification")
 
-local input = Window:new({
-  size = "75%",
-  title = "Epic title",
+local notification = Notification:new({
+  title = "Hola, ¿Qué tal?",
+  content = "Vaya día de mierda.",
   border = "rounded",
-  window_pos = "center",
-  instant_insert = true,
-  enter_to_window = true,
 })
 
-input:connect()
+notification:connect()

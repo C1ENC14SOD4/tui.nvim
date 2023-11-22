@@ -1,23 +1,26 @@
 ---@class Window
----@field private bufnr? integer
----@field private window_id? integer
+---@field public bufnr? integer
+---@field public window_id? integer
 ---@field private width? integer
 ---@field private height? integer
 ---@field private insert? boolean
 ---@field private enter? boolean
 ---@field private pos? Position
 ---@field private title? Title
----@field private border? "single" | "rounded" | "double" | "none"
+---@field private border? Border
+---@field private focusable? boolean
 local M = {}
 
 ---@class WindowOptions
----@field public size Size | "50%" | string
----@field public border? "single" | "rounded" | "double" | "none"
+---You can use percentage from 0 to 10. Example "100%" or "30%", which will
+---generate a window with given percentage.
+---@field public size Size | string
+---@field public border? Border
 ---@field public window_pos? WindowPosition | Position
 ---@field public title? string | Title
 ---@field public instant_insert? boolean
----@field public highlight? string
 ---@field public enter_to_window? boolean
+---@field public focusable? boolean
 
 ---@class Size
 ---@field public width? integer
@@ -42,6 +45,13 @@ local M = {}
 ---| '"bottomleft"'
 ---| '"bottomcenter"'
 ---| '"bottomright"'
+
+---@alias Border
+---| '"rounded"'
+---| '"single"'
+---| '"double"'
+---| '"none"'
+---| '"shadow"'
 
 ---@param obj? WindowOptions
 ---@return Window
@@ -73,16 +83,19 @@ function M:new(obj)
     ---@diagnostic disable-next-line
     self.pos = obj.window_pos
   end
-  self.enter = obj.enter_to_window or true
-  self.insert = obj.instant_insert or true
+  self.enter = false or obj.enter_to_window
+  self.insert = false or obj.instant_insert
   if type(obj.title) == "string" then
-    self.title.text = obj.title ---@diagnostic disable-line
-    self.title.highlight = "Title"
-    self.title.position = "center"
+    self.title = {
+      text = obj.title, ---@diagnostic disable-line
+      position = "center",
+      highlight = "Title"
+    }
   else
     self.title = obj.title ---@diagnostic disable-line
   end
   self.border = obj.border
+  self.focusable = obj.focusable
   return object
 end
 
@@ -117,6 +130,9 @@ function M:position(pos)
   elseif pos == "bottomright" then
     col = (ui.width - self.width)
     row = (ui.height - self.height)
+  elseif pos == "bottomcenter" then
+    col = (ui.width / 2) - (self.width / 2)
+    row = (ui.height - self.height)
   end
   ---@type Position
   return {
@@ -126,6 +142,15 @@ function M:position(pos)
 end
 
 function M:connect()
+  local title = {}
+  ---@type string | nil
+  local pos = "center"
+  if not self.title then
+    title = nil
+    pos = nil
+  else
+    table.insert(title, { ' ' .. self.title.text .. ' ', self.title.highlight })
+  end
   self.window_id = vim.api.nvim_open_win(self.bufnr, self.enter, {
     relative = 'editor',
     width = self.width,
@@ -133,11 +158,10 @@ function M:connect()
     col = self.pos.col,
     row = self.pos.row,
     style = 'minimal',
-    title = {
-      { ' ' .. self.title.text .. ' ', self.title.highlight }
-    },
-    title_pos = self.title.position,
+    title = title,
+    title_pos = pos,
     border = self.border,
+    focusable = false or self.focusable
   })
   if self.insert then
     vim.cmd.startinsert()
