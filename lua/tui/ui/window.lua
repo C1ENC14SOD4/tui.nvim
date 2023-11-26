@@ -1,3 +1,5 @@
+TextField = require("tui.nodes.text_field")
+
 ---@class Widnow
 ---@field private bufnr? integer
 ---@field private window? integer
@@ -30,7 +32,7 @@ end
 ---@class Options
 ---@field public size Size
 ---@field public position Position
----@field public title Title
+---@field public title Title | nil
 ---@field public border? Border
 
 ---@class ExtraOptions
@@ -62,5 +64,10 @@ end
 ---| '"double"'
 ---| '"shadow"'
 ---| '"solid"'
+
+---@param node TextField
+function M:append_node(node)
+
+end
 
 return M
